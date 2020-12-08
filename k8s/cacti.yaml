@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cacti-db-map
+data:
+  DB_HOST: mysql-deployment
+  DB_NAME: cacti_master
+  DB_PASS: cactipassword
+  DB_PORT: "3306"
+  DB_ROOT_PASS: rootpassword
+  DB_USER: cactiuser
+  INITIALIZE_DB: "1"
+  TZ: America/New_York
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cacti-deployment
+spec:
+  ports:
+  - port: 8181
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: cacti
+---    
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cacti-deployment
+spec:
+  selector:
+    matchLabels:
+      app: cacti
+  template:
+    metadata:
+      labels:
+        app: cacti
+    spec:
+      volumes:
+        - name: data
+          emptyDir: {}
+        - name: spine
+          emptyDir: {}
+        - name: backups
+          emptyDir: {}
+      containers:
+      - name: cacti
+        image: smcline06/cacti
+        envFrom:
+          - configMapRef:
+              name: cacti-db-map
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: data
+          mountPath: /cacti
+        - name: spine
+          mountPath: /spine
+        - name: backups
+          mountPath: /backups
