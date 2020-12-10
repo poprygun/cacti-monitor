@@ -30,6 +30,7 @@ spec:
         volumeMounts:
         - name: mysql-persistent-storage
           mountPath: /var/lib/mysql
+          subPath: cacti-msql/var/lib/mysql
 ---
 apiVersion: v1
 kind: Service
